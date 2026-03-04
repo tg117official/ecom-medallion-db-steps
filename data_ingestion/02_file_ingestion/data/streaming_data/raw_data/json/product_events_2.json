@@ -1,0 +1,3 @@
+{"event_id":"EVT2004","product_id":"P104","event_type":"PRICE_UPDATE","event_ts":"2026-03-03 10:10:00","new_price":879.0,"stock_delta":0,"warehouse_id":"WH-3","source_system":"catalog_service"}
+{"event_id":"EVT2005","product_id":"P105","event_type":"STOCK_UPDATE","event_ts":"2026-03-03 10:11:00","new_price":299.0,"stock_delta":10,"warehouse_id":"WH-2","source_system":"inventory_service"}
+{"event_id":"EVT2006","product_id":"P101","event_type":"STOCK_UPDATE","event_ts":"2026-03-03 10:12:00","new_price":479.0,"stock_delta":-1,"warehouse_id":"WH-1","source_system":"inventory_service"}

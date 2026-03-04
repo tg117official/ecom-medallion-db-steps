@@ -1,0 +1,4 @@
+order_id	customer_id	product_id	order_ts	order_status	quantity	unit_price	payment_method	city
+ORD1013	CUST10	P110	2026-03-03 09:55:00	PLACED	1	2199.0	CREDIT_CARD	Indore
+ORD1014	CUST04	P104	2026-03-03 09:58:00	DELIVERED	2	899.0	UPI	Delhi
+ORD1015	CUST05	P101	2026-03-03 10:00:00	RETURNED	1	499.0	DEBIT_CARD	Chennai

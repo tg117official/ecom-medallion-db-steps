@@ -1,0 +1,4 @@
+order_id	customer_id	product_id	order_ts	order_status	quantity	unit_price	payment_method	city
+ORD1001	CUST01	P101	2026-03-03 09:15:00	PLACED	2	499.0	CREDIT_CARD	Pune
+ORD1002	CUST02	P102	2026-03-03 09:18:00	PLACED	1	1299.0	UPI	Mumbai
+ORD1003	CUST03	P103	2026-03-03 09:20:00	SHIPPED	3	199.0	DEBIT_CARD	Bangalore

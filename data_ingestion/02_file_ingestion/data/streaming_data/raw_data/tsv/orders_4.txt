@@ -1,0 +1,4 @@
+order_id	customer_id	product_id	order_ts	order_status	quantity	unit_price	payment_method	city
+ORD1010	CUST08	P108	2026-03-03 09:45:00	PLACED	1	1599.0	UPI	Kolkata
+ORD1011	CUST03	P103	2026-03-03 09:48:00	DELIVERED	2	199.0	NET_BANKING	Bangalore
+ORD1012	CUST09	P109	2026-03-03 09:50:00	PLACED	5	99.0	CASH_ON_DELIVERY	Jaipur

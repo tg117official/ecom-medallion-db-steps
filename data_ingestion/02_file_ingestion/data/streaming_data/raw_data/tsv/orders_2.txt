@@ -1,0 +1,4 @@
+order_id	customer_id	product_id	order_ts	order_status	quantity	unit_price	payment_method	city
+ORD1004	CUST04	P104	2026-03-03 09:25:00	PLACED	1	899.0	UPI	Delhi
+ORD1005	CUST01	P105	2026-03-03 09:28:00	CANCELLED	2	299.0	CREDIT_CARD	Pune
+ORD1006	CUST05	P101	2026-03-03 09:30:00	SHIPPED	1	499.0	NET_BANKING	Chennai

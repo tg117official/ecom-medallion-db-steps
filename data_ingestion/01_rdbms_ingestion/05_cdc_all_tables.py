@@ -72,25 +72,6 @@ CREATE TABLE IF NOT EXISTS {AUDIT_TABLE} (
 ) USING DELTA
 """)
 
-# --------------------------------------------------------------
-# 3) Ensure watermark rows exist for all tables (no MERGE aliases)
-# --------------------------------------------------------------
-wm_seed_df = (
-    spark.createDataFrame(
-        [(SRC_SCHEMA, t, "updated_at") for t in tables],
-        "source_schema STRING, source_table STRING, watermark_col STRING"
-    )
-    .withColumn("last_watermark_ts", F.to_timestamp(F.lit("1900-01-01 00:00:00")))
-    .withColumn("updated_at", F.current_timestamp())
-)
-
-existing_wm = spark.table(WATERMARK_TABLE).select("source_schema", "source_table")
-to_insert = wm_seed_df.join(existing_wm, ["source_schema", "source_table"], "left_anti")
-
-if to_insert.take(1):
-    (to_insert
-     .select("source_schema", "source_table", "watermark_col", "last_watermark_ts", "updated_at")
-     .write.format("delta").mode("append").saveAsTable(WATERMARK_TABLE))
 
 # --------------------------------------------------------------
 # 4) Helpers: audit insert/update

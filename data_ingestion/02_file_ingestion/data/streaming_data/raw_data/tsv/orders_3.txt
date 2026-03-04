@@ -1,0 +1,4 @@
+order_id	customer_id	product_id	order_ts	order_status	quantity	unit_price	payment_method	city
+ORD1007	CUST06	P106	2026-03-03 09:35:00	PLACED	4	149.0	UPI	Hyderabad
+ORD1008	CUST02	P102	2026-03-03 09:38:00	DELIVERED	1	1299.0	CREDIT_CARD	Mumbai
+ORD1009	CUST07	P107	2026-03-03 09:40:00	PLACED	2	749.0	DEBIT_CARD	Ahmedabad
