@@ -33,7 +33,7 @@ from pyspark.sql.functions import col, to_timestamp, expr
 #   C:\ss_demo\output\             <-- outputs go here
 #   C:\ss_demo\checkpoints\        <-- checkpoints go here
 
-BASE_DIR = r"/01_data_ingestion\02_file_ingestion\data\streaming_data"  # <-- change if needed
+BASE_DIR = r"01_data_ingestion\02_file_ingestion\data\streaming_data"  # <-- change if needed
 INPUT_DIR = os.path.join(BASE_DIR, "input", "orders_tsv")
 OUT_DIR = os.path.join(BASE_DIR, "output")
 CKPT_DIR = os.path.join(BASE_DIR, "checkpoints")
