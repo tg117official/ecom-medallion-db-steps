@@ -1,0 +1,19 @@
+{
+  "review_id": "string",
+  "order_id": "long",
+  "customer_id": "long",
+  "product_id": "long",
+  "product_variant_id": "long",
+  "rating": "int",
+  "review_title": "string",
+  "review_text": "string",
+  "review_language": "string",
+  "review_sentiment": "string",
+  "review_status": "string",
+  "is_verified_purchase": "boolean",
+  "helpful_votes": "int",
+  "media_urls": ["string"],
+  "review_created_at": "timestamp",
+  "review_updated_at": "timestamp",
+  "source_system": "string"
+}

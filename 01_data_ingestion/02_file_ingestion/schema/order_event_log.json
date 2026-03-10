@@ -1,0 +1,23 @@
+{
+  "event_id": "string",
+  "order_id": "long",
+  "customer_id": "long",
+  "shipment_id": "long",
+  "payment_id": "long",
+  "event_type": "string",
+  "event_subtype": "string",
+  "event_source": "string",
+  "event_timestamp": "timestamp",
+  "event_status": "string",
+  "old_value": "string",
+  "new_value": "string",
+  "reason_code": "string",
+  "comments": "string",
+  "actor_type": "string",
+  "actor_id": "string",
+  "device_type": "string",
+  "app_channel": "string",
+  "ip_address": "string",
+  "city": "string",
+  "source_file_date": "date"
+}
