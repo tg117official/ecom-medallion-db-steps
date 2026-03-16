@@ -1,0 +1,17 @@
+start
+  ↓
+source_readiness_check
+  ↓
+[bronze_rdbms_ingestion , bronze_file_ingestion]
+  ↓
+bronze_reconciliation_check
+  ↓
+silver_transformation_job
+  ↓
+silver_dq_summary_job
+  ↓
+gold_transformation_job
+  ↓
+gold_reconciliation_check
+  ↓
+end
