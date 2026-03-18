@@ -320,3 +320,8 @@ ORDER BY column_name, tag_key;
 --    That makes governance scalable.
 --
 -- ============================================================
+
+
+Tags are useful when you want to classify datasets and columns clearly, such as marking data as PII, confidential, internal, or public. They help teams discover and understand data faster by showing business domain, ownership, and quality status directly in metadata. Tags are very useful in governance programs where you want to standardize metadata across many tables instead of relying on memory or manual notes. They also help prepare for policy-driven controls, where sensitive or certified data can later be governed using centralized rules. In large projects, tags make governance scalable and auditable because you can quickly identify which assets are customer data, finance data, high-risk data, or trusted reporting data.
+
+
