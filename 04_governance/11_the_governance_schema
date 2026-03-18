@@ -1,0 +1,629 @@
+-- ============================================================
+-- GOVERNANCE SCHEMA DOCUMENTATION SCRIPT
+-- Project: E-commerce Data Platform on Databricks
+-- Catalog : ecomsphere
+-- Schema  : governance
+-- ============================================================
+--
+-- PURPOSE OF THIS FILE
+-- ------------------------------------------------------------
+-- This file is a documentation-style SQL script.
+-- It is meant for understanding and reference.
+--
+-- It explains:
+--   1. purpose of the governance schema
+--   2. tables inside the governance schema
+--   3. how those tables relate to each other
+--   4. how those tables get populated
+--   5. which tools/processes usually populate them
+--   6. question-answer style notes
+--
+-- This file does NOT need to be executed fully for data creation.
+-- It is mainly a structured notes file written in SQL comment style
+-- so that it can live together with your governance SQL assets.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 1: WHAT IS THE GOVERNANCE SCHEMA?
+-- ============================================================
+--
+-- The ecomsphere.governance schema is the control layer of the
+-- lakehouse.
+--
+-- It does NOT store business transactions like:
+--   - customers
+--   - products
+--   - orders
+--   - payments
+--
+-- Instead, it stores governance-related control information such as:
+--   - dataset metadata
+--   - dataset lineage
+--   - schema version history
+--   - pipeline execution audit
+--   - tag registry
+--   - governance certification / release readiness
+--
+-- In simple words:
+--
+--   Bronze / Silver / Gold tell us:
+--     "what the data is"
+--
+--   Governance tells us:
+--     "how the data is controlled, trusted, documented, approved,
+--      and monitored"
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 2: TABLES IN THE GOVERNANCE SCHEMA
+-- ============================================================
+--
+-- Main governance tables in this project:
+--
+--   1. ecomsphere.governance.pipeline_run_audit
+--   2. ecomsphere.governance.dataset_metadata
+--   3. ecomsphere.governance.dataset_lineage
+--   4. ecomsphere.governance.schema_registry
+--   5. ecomsphere.governance.asset_tag_registry
+--   6. ecomsphere.governance.governance_certification_scorecard
+--
+-- These tables together form the governance control model
+-- for the project.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 3: TABLE-BY-TABLE DOCUMENTATION
+-- ============================================================
+
+
+
+-- ============================================================
+-- 3.1 PIPELINE RUN AUDIT
+-- Table: ecomsphere.governance.pipeline_run_audit
+-- ============================================================
+--
+-- PURPOSE
+-- ------------------------------------------------------------
+-- Stores execution-level audit records for pipeline runs.
+--
+-- This table answers questions such as:
+--   - Did the pipeline run?
+--   - Which task failed?
+--   - When did the task start and end?
+--   - How many records were processed?
+--   - What error occurred?
+--
+-- TYPICAL COLUMNS
+-- ------------------------------------------------------------
+--   run_id
+--   pipeline_name
+--   layer_name
+--   task_name
+--   status
+--   started_ts
+--   ended_ts
+--   records_processed
+--   error_message
+--   created_ts
+--
+-- GRAIN
+-- ------------------------------------------------------------
+-- One row per pipeline task execution event.
+--
+-- Example:
+-- A single run_id may produce multiple rows:
+--   - source_readiness_check
+--   - rdbms_to_bronze
+--   - adls_to_bronze
+--   - bronze_to_silver
+--   - silver_dq_metrics
+--   - silver_to_gold
+--   - gold_reconciliation
+--
+-- HOW IT GETS POPULATED
+-- ------------------------------------------------------------
+-- Most realistically in this project:
+--   - Airflow generates the pipeline run context
+--   - Airflow passes run_id / execution context to Databricks jobs
+--   - Databricks notebooks or job wrappers log task execution rows
+--   - optionally Airflow success/failure callbacks also write audit rows
+--
+-- SIMPLE ANSWER
+-- ------------------------------------------------------------
+-- Yes, in a realistic implementation this table should be
+-- populated through Airflow orchestration logic directly or
+-- indirectly.
+--
+-- RECOMMENDED DESIGN
+-- ------------------------------------------------------------
+-- Best practice:
+--   - Airflow controls the run
+--   - Databricks tasks perform processing
+--   - Databricks task/notebook writes task-level metrics
+--   - Airflow may also write orchestration-level status
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- 3.2 DATASET METADATA
+-- Table: ecomsphere.governance.dataset_metadata
+-- ============================================================
+--
+-- PURPOSE
+-- ------------------------------------------------------------
+-- Stores business and governance metadata about datasets.
+--
+-- This table answers questions such as:
+--   - What is this dataset?
+--   - Which business domain does it belong to?
+--   - Which data layer is it in?
+--   - Who owns it?
+--   - How often does it refresh?
+--   - Is it PII / confidential / internal / public?
+--
+-- TYPICAL COLUMNS
+-- ------------------------------------------------------------
+--   object_type
+--   full_name
+--   business_domain
+--   data_layer
+--   owner_group
+--   refresh_frequency
+--   sensitivity_class
+--   description
+--   created_ts
+--
+-- GRAIN
+-- ------------------------------------------------------------
+-- One row per governed object, usually:
+--   - schema
+--   - table
+--   - optionally column
+--
+-- HOW IT GETS POPULATED
+-- ------------------------------------------------------------
+-- Usually populated by:
+--   - manual governance registration SQL
+--   - deployment-time metadata inserts
+--   - metadata registration notebook/job
+--   - future automation reading Catalog metadata and enriching it
+--
+-- RECOMMENDED PROJECT APPROACH
+-- ------------------------------------------------------------
+-- Start with manual SQL inserts for learning and control.
+-- Later automate through a metadata registration notebook.
+--
+-- SIMPLE UNDERSTANDING
+-- ------------------------------------------------------------
+-- This table acts like the project’s custom data catalog
+-- inventory / business metadata registry.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- 3.3 DATASET LINEAGE
+-- Table: ecomsphere.governance.dataset_lineage
+-- ============================================================
+--
+-- PURPOSE
+-- ------------------------------------------------------------
+-- Stores logical upstream-downstream relationships across datasets.
+--
+-- This table answers questions such as:
+--   - Which Bronze tables feed this Silver table?
+--   - Which Silver table feeds this Gold fact?
+--   - If a source changes, what downstream tables are affected?
+--
+-- TYPICAL COLUMNS
+-- ------------------------------------------------------------
+--   downstream_object
+--   upstream_object
+--   lineage_level
+--   transformation_note
+--   captured_ts
+--
+-- GRAIN
+-- ------------------------------------------------------------
+-- One row per lineage relationship between two objects.
+--
+-- HOW IT GETS POPULATED
+-- ------------------------------------------------------------
+-- Usually populated by:
+--   - manual lineage registration SQL
+--   - transformation design mapping documentation
+--   - future automation using Unity Catalog lineage visibility/APIs
+--
+-- RECOMMENDED PROJECT APPROACH
+-- ------------------------------------------------------------
+-- Start with manual logical lineage rows.
+-- This is easy to understand and matches documentation-driven design.
+--
+-- SIMPLE UNDERSTANDING
+-- ------------------------------------------------------------
+-- This is the project’s governed lineage registry.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- 3.4 SCHEMA REGISTRY
+-- Table: ecomsphere.governance.schema_registry
+-- ============================================================
+--
+-- PURPOSE
+-- ------------------------------------------------------------
+-- Stores schema versions and approval status for governed datasets,
+-- especially Auto Loader file feeds.
+--
+-- This table answers questions such as:
+--   - What schema versions existed for this dataset?
+--   - Which version is approved?
+--   - Was a new column detected?
+--   - Was a datatype change rejected?
+--
+-- TYPICAL COLUMNS
+-- ------------------------------------------------------------
+--   dataset_name
+--   version_no
+--   schema_json
+--   effective_ts
+--   approval_status
+--   approved_by
+--   change_note
+--
+-- GRAIN
+-- ------------------------------------------------------------
+-- One row per dataset schema version.
+--
+-- HOW IT GETS POPULATED
+-- ------------------------------------------------------------
+-- Most realistic flow in this project:
+--   - Auto Loader detects a schema change
+--   - a Databricks schema-monitoring notebook compares current schema
+--     with the registered approved schema
+--   - if a change is found, a new schema version row is inserted
+--   - approval_status may start as PENDING
+--   - governance/data engineer later updates it to APPROVED or REJECTED
+--
+-- WHO POPULATES IT
+-- ------------------------------------------------------------
+-- Usually:
+--   - Databricks schema monitoring job/notebook
+--   - possibly triggered through Airflow
+--   - approval update may be manual or workflow-driven
+--
+-- SIMPLE UNDERSTANDING
+-- ------------------------------------------------------------
+-- This is the change control register for schema evolution.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- 3.5 ASSET TAG REGISTRY
+-- Table: ecomsphere.governance.asset_tag_registry
+-- ============================================================
+--
+-- PURPOSE
+-- ------------------------------------------------------------
+-- Stores a queryable record of tags assigned to datasets/columns.
+--
+-- This table answers questions such as:
+--   - Which assets are tagged as PII?
+--   - Which table belongs to which business domain?
+--   - Which column is confidential?
+--   - Which fields are certified?
+--
+-- TYPICAL COLUMNS
+-- ------------------------------------------------------------
+--   full_name
+--   column_name
+--   tag_key
+--   tag_value
+--   created_ts
+--
+-- GRAIN
+-- ------------------------------------------------------------
+-- One row per applied tag.
+--
+-- HOW IT GETS POPULATED
+-- ------------------------------------------------------------
+-- Usually populated by:
+--   - manual inserts for learning/project reporting
+--   - future sync notebook reading actual Unity Catalog tag metadata
+--
+-- IMPORTANT NOTE
+-- ------------------------------------------------------------
+-- This table is not the native Unity Catalog source of truth itself.
+-- It is a project-level reporting/registry table.
+--
+-- SIMPLE UNDERSTANDING
+-- ------------------------------------------------------------
+-- This is the project’s tag reporting table.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- 3.6 GOVERNANCE CERTIFICATION SCORECARD
+-- Table: ecomsphere.governance.governance_certification_scorecard
+-- ============================================================
+--
+-- PURPOSE
+-- ------------------------------------------------------------
+-- Acts as the release gate / readiness checklist for governed datasets.
+--
+-- This table answers questions such as:
+--   - Is this dataset ready for governed production release?
+--   - Is documentation complete?
+--   - Is owner assigned?
+--   - Is masking validated?
+--   - Is lineage available?
+--   - Is DQ summary present?
+--   - Did the dataset pass governance review?
+--
+-- TYPICAL COLUMNS
+-- ------------------------------------------------------------
+--   dataset_name
+--   documentation_complete
+--   owner_assigned
+--   access_reviewed
+--   pii_masking_validated
+--   row_security_validated
+--   lineage_available
+--   audit_visibility_available
+--   schema_approved
+--   dq_summary_available
+--   final_status
+--   reviewed_by
+--   reviewed_ts
+--   review_note
+--
+-- GRAIN
+-- ------------------------------------------------------------
+-- One row per reviewed dataset at one review point in time.
+--
+-- HOW IT GETS POPULATED
+-- ------------------------------------------------------------
+-- Usually populated by:
+--   - manual governance review process
+--   - governance reviewer / steward
+--   - optionally a semi-automated notebook that pre-fills checks
+--
+-- SIMPLE UNDERSTANDING
+-- ------------------------------------------------------------
+-- This is the final governance approval / release readiness table.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 4: HOW THESE TABLES RELATE TO EACH OTHER
+-- ============================================================
+--
+-- The governance schema tables are mostly related conceptually.
+-- They are often not connected through strict foreign key constraints.
+--
+-- This is normal because governance tables are often:
+--   - control tables
+--   - audit tables
+--   - registries
+--   - logs
+--
+-- RELATIONSHIP VIEW
+-- ------------------------------------------------------------
+--
+-- dataset_metadata answers:
+--   "What is this dataset?"
+--
+-- asset_tag_registry answers:
+--   "How is this dataset classified?"
+--
+-- dataset_lineage answers:
+--   "Where did this dataset come from?"
+--
+-- schema_registry answers:
+--   "Is the schema of this dataset controlled?"
+--
+-- pipeline_run_audit answers:
+--   "Was the pipeline that refreshes this dataset executed properly?"
+--
+-- governance_certification_scorecard answers:
+--   "Is this dataset governance-ready for release?"
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 5: CONCEPTUAL RELATIONSHIP MAP
+-- ============================================================
+--
+-- The central object in governance is usually the dataset name,
+-- for example:
+--   ecomsphere.gold.fact_sales_order_item
+--   ecomsphere.silver.silver_dim_customer_profile
+--
+-- That dataset can appear in multiple governance tables.
+--
+-- CONCEPTUAL LINKS
+-- ------------------------------------------------------------
+--
+-- dataset_metadata.full_name
+-- is conceptually related to:
+--   - asset_tag_registry.full_name
+--   - dataset_lineage.upstream_object
+--   - dataset_lineage.downstream_object
+--   - schema_registry.dataset_name
+--   - governance_certification_scorecard.dataset_name
+--
+-- pipeline_run_audit is slightly different because it tracks
+-- pipeline task execution rather than dataset master records directly.
+-- Still, it is operationally related because those tasks refresh
+-- the datasets governed elsewhere.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 6: HOW THE GOVERNANCE SCHEMA GETS POPULATED END TO END
+-- ============================================================
+--
+-- 6.1 DURING ENVIRONMENT / OBJECT SETUP
+-- ------------------------------------------------------------
+-- Usually populated:
+--   - dataset_metadata
+--   - initial dataset_lineage
+--   - initial asset_tag_registry
+--
+-- Usually by:
+--   - setup SQL scripts
+--   - deployment notebooks
+--   - governance registration scripts
+--
+--
+-- 6.2 DURING INGESTION / TRANSFORMATION PIPELINE RUNS
+-- ------------------------------------------------------------
+-- Usually populated:
+--   - pipeline_run_audit
+--
+-- Usually by:
+--   - Airflow
+--   - Databricks job/notebook logging
+--
+-- Most realistic for this project:
+--   - Airflow controls the run
+--   - Databricks executes the processing
+--   - both contribute execution audit information
+--
+--
+-- 6.3 DURING SCHEMA EVOLUTION MONITORING
+-- ------------------------------------------------------------
+-- Usually populated:
+--   - schema_registry
+--
+-- Usually by:
+--   - Auto Loader-aware schema comparison notebook/job
+--   - governance approval process
+--
+--
+-- 6.4 DURING TAGGING / METADATA UPDATE
+-- ------------------------------------------------------------
+-- Usually populated:
+--   - asset_tag_registry
+--   - sometimes dataset_metadata updates
+--
+-- Usually by:
+--   - manual governance scripts
+--   - metadata/tag sync notebooks
+--   - classification workflows
+--
+--
+-- 6.5 DURING GOVERNANCE REVIEW / RELEASE READINESS
+-- ------------------------------------------------------------
+-- Usually populated:
+--   - governance_certification_scorecard
+--
+-- Usually by:
+--   - governance reviewer
+--   - release checklist notebook
+--   - manual approval workflow
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 7: END-TO-END GOVERNANCE FLOW IN SIMPLE LANGUAGE
+-- ============================================================
+--
+-- Step 1:
+-- A dataset is created in Bronze, Silver, or Gold.
+--
+-- Step 2:
+-- The dataset is registered in dataset_metadata.
+--
+-- Step 3:
+-- Classification labels may be recorded in asset_tag_registry.
+--
+-- Step 4:
+-- Upstream/downstream relationships are recorded in dataset_lineage.
+--
+-- Step 5:
+-- If the dataset is file-based and schema evolves, schema changes
+-- are tracked in schema_registry.
+--
+-- Step 6:
+-- Whenever pipeline execution happens, task-level execution events
+-- are recorded in pipeline_run_audit.
+--
+-- Step 7:
+-- Before governed release or signoff, the dataset is reviewed in
+-- governance_certification_scorecard.
+--
+-- ============================================================
+
+
+
+-- ============================================================
+-- SECTION 8: QUESTION-ANSWER STYLE NOTES
+-- ============================================================
+--
+-- Q1. What is the main purpose of the governance schema?
+-- ------------------------------------------------------------
+-- It stores control, audit, metadata, lineage, schema approval,
+-- and release-readiness information for datasets in the platform.
+--
+--
+-- Q2. Does the governance schema store business facts like
+--     customers, orders, or products?
+-- ------------------------------------------------------------
+-- No.
+-- Those belong to Bronze, Silver, and Gold business layers.
+-- Governance stores control information about datasets and pipelines.
+--
+--
+-- Q3. Which table stores metadata about datasets?
+-- ------------------------------------------------------------
+-- ecomsphere.governance.dataset_metadata
+--
+--
+-- Q4. Which table stores pipeline execution logs?
+-- ------------------------------------------------------------
+-- ecomsphere.governance.pipeline_run_audit
+--
+--
+-- Q5. Is pipeline_run_audit populated through Airflow?
+-- ------------------------------------------------------------
+-- In a realistic design, yes.
+-- Usually Airflow participates directly or indirectly by generating
+-- run context and orchestrating the tasks whose execution details are
+-- written into pipeline_run_audit.
+--
+--
+-- Q6. Which table stores schema version history?
+-- ------------------------------------------------------------
+-- ecomsphere.governance.schema_registry
+--
+--
+-- Q7. Which table stores lineage between datasets?
+-- ------------------------------------------------------------
+-- ecomsphere.governance.datas
